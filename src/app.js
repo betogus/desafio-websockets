@@ -6,6 +6,10 @@ const server = app.listen(PORT, () => console.log('Server Up'))
 app.use(express.static('./src/public')) 
 const fs = require("fs");
 
+
+//Configuracion para la base de datos
+const productManager = require('./controllers/product.manager')
+
 //HANDLEBARS
 const handlebars = require('express-handlebars')
 app.engine('handlebars', handlebars.engine())
@@ -19,16 +23,15 @@ app.get('/', (req, res) => {
     res.render('home') 
 })
 
-let productos = []
 let history = []
 
-
-
-
+let productos = []
 io.on('connection', socket => {
     console.log('Socket connected!')
-    socket.on('product', data => {
-        productos.push(data)
+    productManager.createTable()
+    socket.on('product',  async data => {
+        productos = await productManager.insertData(data)
+        productos = await productManager.getAll() 
         io.emit('products', productos)
     })
     socket.emit('products', productos) //Para que el que se conecte, le lleguen todos los productos
