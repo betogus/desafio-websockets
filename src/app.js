@@ -9,7 +9,7 @@ const fs = require("fs");
 
 //Configuracion para la base de datos
 const productManager = require('./controllers/product.manager')
-
+const chatManager = require('./controllers/chat.manager')
 //HANDLEBARS
 const handlebars = require('express-handlebars')
 app.engine('handlebars', handlebars.engine())
@@ -26,21 +26,25 @@ app.get('/', (req, res) => {
 let history = []
 
 let productos = []
-io.on('connection', socket => {
+io.on('connection', async socket => {
     console.log('Socket connected!')
-    productManager.createTable()
+    await chatManager.createTable()
+    await productManager.createTable()
     socket.on('product',  async data => {
-        productos = await productManager.insertData(data)
-        productos = await productManager.getAll() 
+        await productManager.insertData(data)
+        productos = await productManager.getAll()
         io.emit('products', productos)
     })
     socket.emit('products', productos) //Para que el que se conecte, le lleguen todos los productos
-    history = readHistoryOfMessages()
-    socket.on('chat', data => {
-        console.log(history)
-        history.push(data)
+    //history = readHistoryOfMessages()
+    history = await chatManager.getAll()
+    socket.on('chat', async data => {
+
+        // history.push(data)
+        await chatManager.insertData(data)
+        history = await chatManager.getAll()
         io.emit('history', history)
-        writeHistoryOfMessages(history)
+        //writeHistoryOfMessages(history)
     })
     socket.emit('history', history) //Para que el que se conecte, le lleguen todos los chats
 })
@@ -60,7 +64,7 @@ const writeHistoryOfMessages = (messages) => {
 
 const readHistoryOfMessages = () => {
     try {
-        let data = fs.readFileSync("messages.txt", 'utf8');
+        let data = 
         history = data.length > 0 ? JSON.parse(data) : [] ; 
     } catch(err) {
         console.log('Error en la lectura del archivo', err)

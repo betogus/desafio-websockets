@@ -11,6 +11,7 @@ const onHandleSubmit = (e, form) => {
      let obj = {}
     formData.forEach((value, key) => obj[key]= value)
     if (obj.nombre && obj.precio && obj.foto) {
+        console.log(obj)
         socket.emit('product', obj)
         document.getElementById('emptyFields').innerHTML = ``
     }
@@ -20,7 +21,6 @@ const onHandleSubmit = (e, form) => {
 }
  
 productForm.addEventListener('submit', (e) => {
-
     onHandleSubmit(e, e.target)
 })
 
@@ -78,6 +78,7 @@ const onHandleSubmitChat = (e) => {
     if (message && email) {
         let date = new Date().toLocaleString()
         let chat = {email, message, date} 
+        console.log(chat)
         socket.emit('chat', chat)
         document.getElementById('emptyChatFields').innerHTML = ``
     }
